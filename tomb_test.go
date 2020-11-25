@@ -2,9 +2,10 @@ package tomb_test
 
 import (
 	"errors"
-	"gopkg.in/tomb.v2"
 	"reflect"
 	"testing"
+
+	"github.com/mattnibs/tomb"
 )
 
 func nothing() error { return nil }
@@ -95,7 +96,7 @@ func TestKillf(t *testing.T) {
 
 	err := tb.Killf("BO%s", "OM")
 	if s := err.Error(); s != "BOOM" {
-		t.Fatalf(`Killf("BO%s", "OM"): want "BOOM", got %q`, s)
+		t.Fatalf(`Killf("BO%%s", "OM"): want "BOOM", got %q`, s)
 	}
 	checkState(t, tb, true, false, err)
 
@@ -143,6 +144,14 @@ func TestKillErrStillAlivePanic(t *testing.T) {
 		checkState(t, tb, false, false, tomb.ErrStillAlive)
 	}()
 	tb.Kill(tomb.ErrStillAlive)
+}
+
+func TestKillWaitWithNoGo(t *testing.T) {
+	var tb tomb.Tomb
+	tb.Kill(nil)
+	if err := tb.Wait(); err != nil {
+		t.Fatalf("Expected nil error got: %v", err)
+	}
 }
 
 func checkState(t *testing.T, tb *tomb.Tomb, wantDying, wantDead bool, wantErr error) {

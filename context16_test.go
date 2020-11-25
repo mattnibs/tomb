@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/net/context"
 
-	"gopkg.in/tomb.v2"
+	"github.com/mattnibs/tomb"
 )
 
 func TestWithContext(t *testing.T) {

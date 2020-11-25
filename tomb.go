@@ -186,6 +186,9 @@ func (t *Tomb) Kill(reason error) {
 	t.m.Lock()
 	defer t.m.Unlock()
 	t.kill(reason)
+	if t.alive == 0 {
+		close(t.dead)
+	}
 }
 
 func (t *Tomb) kill(reason error) {
