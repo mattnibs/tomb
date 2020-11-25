@@ -75,19 +75,15 @@ func TestKill(t *testing.T) {
 	// a nil reason flags the goroutine as dying
 	tb := &tomb.Tomb{}
 	tb.Kill(nil)
-	checkState(t, tb, true, false, nil)
+	checkState(t, tb, true, true, nil)
 
 	// a non-nil reason now will override Kill
 	err := errors.New("some error")
 	tb.Kill(err)
-	checkState(t, tb, true, false, err)
+	checkState(t, tb, true, true, err)
 
 	// another non-nil reason won't replace the first one
 	tb.Kill(errors.New("ignore me"))
-	checkState(t, tb, true, false, err)
-
-	tb.Go(nothing)
-	tb.Wait()
 	checkState(t, tb, true, true, err)
 }
 
@@ -98,14 +94,10 @@ func TestKillf(t *testing.T) {
 	if s := err.Error(); s != "BOOM" {
 		t.Fatalf(`Killf("BO%%s", "OM"): want "BOOM", got %q`, s)
 	}
-	checkState(t, tb, true, false, err)
+	checkState(t, tb, true, true, err)
 
 	// another non-nil reason won't replace the first one
 	tb.Killf("ignore me")
-	checkState(t, tb, true, false, err)
-
-	tb.Go(nothing)
-	tb.Wait()
 	checkState(t, tb, true, true, err)
 }
 
@@ -114,13 +106,13 @@ func TestErrDying(t *testing.T) {
 	tb := &tomb.Tomb{}
 	tb.Kill(nil)
 	tb.Kill(tomb.ErrDying)
-	checkState(t, tb, true, false, nil)
+	checkState(t, tb, true, true, nil)
 
 	// ErrDying being used properly, after an errorful death.
 	err := errors.New("some error")
 	tb.Kill(err)
 	tb.Kill(tomb.ErrDying)
-	checkState(t, tb, true, false, err)
+	checkState(t, tb, true, true, err)
 
 	// ErrDying being used badly, with an alive tomb.
 	tb = &tomb.Tomb{}

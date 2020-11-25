@@ -173,7 +173,8 @@ func (t *Tomb) run(f func() error) {
 }
 
 // Kill puts the tomb in a dying state for the given reason,
-// closes the Dying channel, and sets Alive to false.
+// closes the Dying channel, and sets Alive to false. If Go
+// has not been called the tomb will become dead.
 //
 // Althoguh Kill may be called multiple times, only the first
 // non-nil error is recorded as the death reason.
@@ -186,8 +187,12 @@ func (t *Tomb) Kill(reason error) {
 	t.m.Lock()
 	defer t.m.Unlock()
 	t.kill(reason)
-	if t.alive == 0 {
-		close(t.dead)
+	select {
+	case <-t.dead:
+	default:
+		if t.alive == 0 {
+			close(t.dead)
+		}
 	}
 }
 
